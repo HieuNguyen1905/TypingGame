@@ -1,13 +1,7 @@
-#ifdef __EMSCRIPTEN__
 #include <SDL.h>
 #include <SDL_ttf.h>
 #include <SDL_image.h>
-#include <emscripten.h>
-#else
-#include <SDL.h>
-#include <SDL_ttf.h>
-#include <SDL_image.h>
-#endif
+#include<SDL_mixer.h>
 #include <iostream>
 #include<string>
 #include <array>
@@ -37,16 +31,18 @@ SDL_Rect statusBar = { 0, HEIGHT - BARHEIGHT, WIDTH, BARHEIGHT };
 
 string inputStr = "";
 string gameState = "intro";
-int speed = SPEED;
+double speed = SPEED;
 int score = 0;
+int scoreNeedToIncrease = 10;
+double speedIncrease = SPEEDINCREASE;
 int hp = HP;
 float wpm;
 
 class Word {
 public:
-    int x, y;
+    double x, y;
     string text;
-    Word(int x, int y, string text) {
+    Word(double x, double y, string text) {
         this->x = x;
         this->y = y;
         this->text = text;
@@ -58,21 +54,14 @@ vector<Word> wordsList;
 void update() {
     if (hp <= 0) {
        // save(wpm, (float)tick2 / 1000.0);
-#ifndef __EMSCRIPTEN__
         running = false;
-        cout << "You lost, wpm: " + to_string(wpm) << endl;
-#else
-        emscripten_cancel_main_loop();
-        running = false;
-        cout << "You lost, wpm: " + to_string(wpm) << endl;
-#endif
+        cout << "You lost!!!" << endl;
     }
 
-    wpm = (float)score / (float)((float)tick2 / 60000.0);
-    speed += ACC;
-
+  
+    cout << speed << endl;
     while (wordsList.size() < 15) {
-        Word temp(randomNumber(0, 150), randomNumber(0, HEIGHT - 100), getLine());
+        Word temp(randomNumberX(0, 150), randomNumberY(0, HEIGHT - 100), getLine());
         wordsList.push_back(temp);
     }
 
@@ -82,7 +71,7 @@ void update() {
             hp--;
             continue;
         }
-        word.x += floor((float)SPEED / 1000.0);
+        word.x += speed;
         tempList.push_back(word);
     }
     wordsList = tempList;
@@ -95,10 +84,20 @@ void checkInput() {
         if (word.text == inputStr && !found) {
             found = true;
             score++;
+            inputStr = "";
             continue;
         }
         tempList.push_back(word);
     }
+    if (!soundEffect2) {
+        cout << "Failed to load typing sound effect2!" << endl;
+    }
+    Mix_PlayChannel(-1, soundEffect2, 0);
+    if (score == scoreNeedToIncrease) {
+        speed += speedIncrease;
+        scoreNeedToIncrease += 10;
+    }
+    cout << speed << endl;
     wordsList = tempList;
 
     inputStr = "";
@@ -111,18 +110,24 @@ void input() {
     while (SDL_PollEvent(&e)) {
         switch (e.type) {
         case SDL_KEYDOWN:
-            switch (e.key.keysym.sym)
+            if (!soundEffect1) {
+                cout << "Failed to load typing sound effect1!" << endl;
+            }
+            Mix_PlayChannel(-1, soundEffect1, 0);
+ 
+              switch (e.key.keysym.sym)
             {
             case SDLK_RETURN:
-                checkInput();
-                break;
-            case SDLK_BACKSPACE:
+               checkInput();
+               break;
+           case SDLK_BACKSPACE:
                 if (inputStr.length() > 0)
                     inputStr.pop_back();
                 break;
             default:
                 break;
             }
+
             break;
         case SDL_QUIT:
             running = false;
@@ -187,19 +192,21 @@ void render() {
         write(word.text, word.x, word.y, White, true);
     }
 
-    write("[" + inputStr + "]" + " | Score: " + to_string(score) + " | wpm: " + to_string(wpm) + " | HP: " + to_string(hp), 30, HEIGHT - BARHEIGHT + 10, Black);
-
+    write("[" + inputStr + "]" + " | Score: " + to_string(score) + " | HP: " + to_string(hp), 30, HEIGHT - BARHEIGHT + 10, Black);
+    // + " | wpm: " + to_string(wpm)
     SDL_RenderPresent(renderer);
 }
 
 void main_loop() {
     Uint64 start = SDL_GetPerformanceCounter();
     tick2 = SDL_GetTicks();
-
+ //   cout << tick2 << endl;
     delta = tick2 - tick1;
-
+ //   cout << delta << endl;
     if (delta > 1000.0 / (float)FPS) {
         tick1 = SDL_GetTicks();
+ //       cout << tick1 << endl;
+        
         update();
         input();
         render();
@@ -207,20 +214,23 @@ void main_loop() {
 }
 
 int main(int argc, char *argv[]) {
+
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
         cout << "Failed at SDL_Init()" << endl;
     if (SDL_CreateWindowAndRenderer(WIDTH, HEIGHT, 0, &window, &renderer) < 0)
         cout << "Failed at SDL_CreateWindowAndRenderer()" << endl;
     if (TTF_Init() < 0)
         cout << "Failed at TTF_Init" << TTF_GetError() << endl;
-    //#ifndef __EMSCRIPTEN__
+
     if (IMG_Init(IMG_INIT_PNG) != IMG_INIT_PNG)
         cout << "Failed at IMG_Init" << IMG_GetError() << endl;
-    //#endif
+    if (Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) < 0) {
+        cout << "SDL_mixer could not initialize! SDL_mixer Error: " << Mix_GetError() << endl;
+    }
 
     running = true;
 
-    SDL_SetWindowTitle(window, "WPM");
+    SDL_SetWindowTitle(window, "Typing Game");
     SDL_Surface* image = IMG_Load(BG_PATH);
     imgTexture = SDL_CreateTextureFromSurface(renderer, image);
     SDL_FreeSurface(image);
@@ -228,13 +238,12 @@ int main(int argc, char *argv[]) {
     if (!image) {
         cout << "Failed at IMG_Load" << IMG_GetError() << endl;
     }
+    soundEffect1 = Mix_LoadWAV("resource/typing.wav");
+    soundEffect2 = Mix_LoadWAV("resource/trueword.wav");
 
-#ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop(main_loop, 0, 1);
-#else
-    while (running)
+    while (running) 
         main_loop();
-#endif
+
     TTF_CloseFont(font);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);

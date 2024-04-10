@@ -1,13 +1,20 @@
-#include "words.h"
+﻿#include "words.h"
 #include <string>
 using namespace std;
 
-int randomNumber(int start, int end) {
-    random_device rd;
-    mt19937 mt(rd());
-    uniform_real_distribution<double> dist(start, end);
+int randomNumberX(double start, double end) {
+    random_device rd; // Thiết bị ngẫu nhiên, được sử dụng để tạo ra các giá trị ngẫu nhiên
+    mt19937 mt(rd()); // Tham số của pp tạo số ngẫu nhiên
+    uniform_real_distribution<double> dist(start, end); //Đây là phân phối đồng đều, dùng để tạo ra các giá trị ngẫu nhiên trong 1 phạm vi cụ thể
     return dist(mt);
 }
+int randomNumberY(double start, double end) {
+    random_device rd; // Thiết bị ngẫu nhiên, được sử dụng để tạo ra các giá trị ngẫu nhiên
+    mt19937 mt(rd()); // Tham số của pp tạo số ngẫu nhiên
+    uniform_real_distribution<double> dist(start, end); //Đây là phân phối đồng đều, dùng để tạo ra các giá trị ngẫu nhiên trong 1 phạm vi cụ thể
+    return dist(mt) + 2;
+}
+
 
 string getLine() {
     string line;
@@ -22,5 +29,5 @@ string getLine() {
         file.close();
     }
 
-    return lines[randomNumber(0, 200)];
+    return lines[randomNumberX(0, 200)];
 }
