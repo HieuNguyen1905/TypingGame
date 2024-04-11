@@ -7,7 +7,8 @@
 #define FPS 24
 #define SOUND_PATH "/resource/typing_sound.wav"
 #define FONT_PATH "./resource/FSEX302.ttf"
-#define BG_PATH "./resource/2.jpg"
+#define BACKGROUND_PATH "./resource/background.jpg"
+#define MAINMENU_PATH "./resource/mainmenu.jpg"
 #define BARHEIGHT 40
 #define HP 3
 
