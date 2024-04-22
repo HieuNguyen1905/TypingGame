@@ -139,7 +139,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="main.h" />
-    <ClInclude Include="save.h" />
     <ClInclude Include="words.h" />
   </ItemGroup>
   <ItemGroup>

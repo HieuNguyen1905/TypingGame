@@ -9,9 +9,11 @@
 #include <vector>
 #include <tuple>
 #include <utility>
+#include<set>
 #include "main.h"
 #include "words.h"
-#include"save.h"
+
+
 
 using namespace std;
 
@@ -37,6 +39,8 @@ int scoreNeedToIncrease = 10;
 double speedIncrease = SPEEDINCREASE;
 int hp = HP;
 
+bool startGameRequested = false;
+bool gameOver = false;
 class Word {
 public:
     double x, y;
@@ -86,17 +90,6 @@ void write(string str, int x, int y, SDL_Color color, bool colorTyped = false) {
     SDL_DestroyTexture(texture);
 }
 
-//void renderMainMenu() {
-//    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-//    SDL_RenderClear(renderer);
-//
-//    write("Main Menu", WIDTH / 2 - 100, 50, White);
-//    write("1. Start Game", WIDTH / 2 - 100, 150, White);
-//    write("2. Instructions", WIDTH / 2 - 100, 200, White);
-//    write("3. Exit", WIDTH / 2 - 100, 250, White);
-//
-//    SDL_RenderPresent(renderer); 
-//}
 
 void renderMainMenu() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -119,58 +112,67 @@ void renderMainMenu() {
     SDL_RenderPresent(renderer);
 }
 
-//void renderMainMenu() {
-//    const int BUTTON_WIDTH = 200; // Ð?nh nghia chi?u r?ng c?a các nút
-//    const int BUTTON_HEIGHT = 50; // Ð?nh nghia chi?u cao c?a các nút
-//    // Clear the renderer
-//    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-//    SDL_RenderClear(renderer);
-//
-//    // Render background image
-//    SDL_RenderCopy(renderer, imgTexture, NULL, NULL);
-//    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 255);
-//    // Load button images
-//    SDL_Texture* startButtonTexture = IMG_LoadTexture(renderer, "startbutton.jpg");
-//    SDL_Texture* instructionsButtonTexture = IMG_LoadTexture(renderer, "howtoplay.jpg");
-//    SDL_Texture* exitButtonTexture = IMG_LoadTexture(renderer, "highscore.jpg");
-//
-//
-//    // Render buttons
-//    SDL_Rect startButtonRect = { (WIDTH - BUTTON_WIDTH) / 2, 150, BUTTON_WIDTH, BUTTON_HEIGHT };
-//    SDL_Rect instructionsButtonRect = { (WIDTH - BUTTON_WIDTH) / 2, 200, BUTTON_WIDTH, BUTTON_HEIGHT };
-//    SDL_Rect exitButtonRect = { (WIDTH - BUTTON_WIDTH) / 2, 250, BUTTON_WIDTH, BUTTON_HEIGHT };
-//
-//    SDL_RenderCopy(renderer, startButtonTexture, NULL, &startButtonRect);
-//    SDL_RenderCopy(renderer, instructionsButtonTexture, NULL, &instructionsButtonRect);
-//    SDL_RenderCopy(renderer, exitButtonTexture, NULL, &exitButtonRect);
-//
-//    // Clean up button textures
-//    SDL_DestroyTexture(startButtonTexture);
-//    SDL_DestroyTexture(instructionsButtonTexture);
-//    SDL_DestroyTexture(exitButtonTexture);
-//
-//    // Present the renderer
-//    SDL_RenderPresent(renderer);
-//}
-
 void RenderGameOverMenu() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, imgTexture, NULL, NULL);
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 255);
 
-    write("Replay", WIDTH / 2 - 100, 150, White);
+    SDL_Texture* GameOverMenu = IMG_LoadTexture(renderer, GAMEOVERMENU_PATH);
+    if (!GameOverMenu) {
+        cout << "Failed to load game over menu texture: " << IMG_GetError() << endl;
+    }
+    else {
 
-    write(" Exit", WIDTH / 2 - 100, 250, White);
+        SDL_RenderCopy(renderer, GameOverMenu, NULL, NULL);
 
-    SDL_RenderPresent(renderer); 
+        SDL_DestroyTexture(GameOverMenu);
+    }
+
+    SDL_RenderPresent(renderer);
+
 }
 
-bool startGameRequested = false;
+
+void handleGameOverMenu() {
+    SDL_Event e;
+//    const Uint8* keystates = SDL_GetKeyboardState(NULL);
+    const int buttonHeight = 80;
+    const int buttonWidth = 320;
+    while (SDL_PollEvent(&e)) {
+        switch (e.type) {
+
+        case SDL_QUIT:    
+            running = false;
+            break;
+        case SDL_MOUSEBUTTONDOWN:
+            int mouseX, mouseY;
+            SDL_GetMouseState(&mouseX, &mouseY);
+            if (mouseX >= 456 && mouseX <= 456 + buttonWidth &&
+                mouseY >= 457 && mouseY <= 457 + buttonHeight) {
+
+                gameOver = false;
+                startGameRequested = true;
+                score = 0;
+                hp = HP;
+                speed = SPEED;
+                scoreNeedToIncrease = 10;
+            }
+            if (mouseX >= 460 && mouseX <= 460 + buttonWidth &&
+                mouseY >= 576 && mouseY <= 576 + buttonHeight) {
+                running = false;
+            }
+            break;
+        default: break;
+        }
+    }
+}
+
 
 
 void handleMainMenuInput() {
-    TTF_Font* font = TTF_OpenFont(FONT_PATH, FONT_SIZE);
     SDL_Event e;
-    const Uint8* keystates = SDL_GetKeyboardState(NULL);
+
     const int buttonHeight = 80;
     const int buttonWidth = 320;
     while (SDL_PollEvent(&e)) {
@@ -183,45 +185,61 @@ void handleMainMenuInput() {
             int mouseX, mouseY;
 
             SDL_GetMouseState(&mouseX, &mouseY);
+            // Start
             if (mouseX >= 470 && mouseX <= 470 + buttonWidth &&
                 mouseY >= 313 && mouseY <= 313 + buttonHeight) {
 
                 startGameRequested = true;
             }
+            // Instruction
+            if (mouseX >= 460 && mouseX <= 460 + buttonWidth &&
+                mouseY >= 623 && mouseY <= 623 + buttonHeight) {
+            }
+            // High Score
             break;
         default: break;
         }
     }
 }
 
-bool gameOver = false;
+
 
 void update() {
     if (hp <= 0) {
-       // save(wpm, (float)tick2 / 1000.0);
         gameOver = true;
-        running = false;
- //       return;
- //      cout << "You lost!!!" << endl << "Your score: " << score << endl;
+        return;
     }
 
- //   cout << speed << endl;
+    // Sử dụng set để lưu trữ các vị trí đã chọn
+    set<pair<int, int>> chosenPositions;
+
     while (wordsList.size() < 15) {
-        Word temp(randomNumberX(0, 150), randomNumberY(0, HEIGHT - 100), getLine());
-        wordsList.push_back(temp);
+        double x = randomNumberX(0, 200);
+        double y = randomNumberY(0, HEIGHT - 50);
+
+        // Kiểm tra xem vị trí đã được chọn chưa
+        if (chosenPositions.find({ (int)x, (int)y }) == chosenPositions.end()) {
+            Word temp(x, y, getLine());
+            wordsList.push_back(temp);
+
+            // Thêm vị trí vào set
+            chosenPositions.insert({ (int)x, (int)y });
+        }
     }
 
     vector<Word> tempList;
-    for (auto &word : wordsList) {
+    for (auto& word : wordsList) {
         if (word.x > WIDTH) {
             hp--;
             continue;
         }
         word.x += speed;
+
         tempList.push_back(word);
     }
     wordsList = tempList;
 }
+
 
 void checkInput() {
     vector<Word> tempList;
@@ -250,64 +268,70 @@ void checkInput() {
 }
 
 void input() {
-  //  if (gameOver) return;
-    SDL_Event e;
-    const Uint8* keystates = SDL_GetKeyboardState(NULL);
-    SDL_StartTextInput();
-    while (SDL_PollEvent(&e)) {
-        switch (e.type) {
-        case SDL_KEYDOWN:
-            if (!soundEffect1) {
-                cout << "Failed to load typing sound effect1!" << endl;
-            }
-            Mix_PlayChannel(-1, soundEffect1, 0);
- 
-              switch (e.key.keysym.sym)
-            {
-            case SDLK_RETURN:
-               checkInput();
-               break;
-           case SDLK_BACKSPACE:
-                if (inputStr.length() > 0)
-                    inputStr.pop_back();
-                break;
-            default:
-                break;
-            }
+    if (!gameOver) {
 
-            break;
-        case SDL_QUIT:
-            running = false;
-            break;
-        case SDL_TEXTINPUT:
-            if (*e.text.text == ' ') {
-                checkInput();
-            }
-            else {
-                inputStr += e.text.text;
+        SDL_Event e;
+        const Uint8* keystates = SDL_GetKeyboardState(NULL);
+        SDL_StartTextInput();
+        while (SDL_PollEvent(&e)) {
+            switch (e.type) {
+            case SDL_KEYDOWN:
+                if (!soundEffect1) {
+                    cout << "Failed to load typing sound effect1!" << endl;
+                }
+                Mix_PlayChannel(-1, soundEffect1, 0);
+
+                switch (e.key.keysym.sym)
+                {
+                case SDLK_RETURN:
+                    checkInput();
+                    break;
+                case SDLK_BACKSPACE:
+                    if (inputStr.length() > 0)
+                        inputStr.pop_back();
+                    break;
+                default:
+                    break;
+                }
+
                 break;
+            case SDL_QUIT:
+                running = false;
+                break;
+            case SDL_TEXTINPUT:
+                if (*e.text.text == ' ') {
+                    checkInput();
+                }
+                else {
+                    inputStr += e.text.text;
+                    break;
+                }
+            default: break;
             }
-        default: break;
         }
     }
+    else return;
 }
 
 
 void render() {
+    if (!gameOver)
+    {
+        SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 255);
+        SDL_RenderClear(renderer);
+        SDL_RenderCopy(renderer, imgTexture, NULL, NULL);
+        SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 255);
+        SDL_RenderFillRect(renderer, &statusBar);
 
-    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 255);
-    SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, imgTexture, NULL, NULL);
-    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 255);
-    SDL_RenderFillRect(renderer, &statusBar);
+        for (auto& word : wordsList) {
+            write(word.text, word.x, word.y, White, true);
+        }
 
-    for (auto &word : wordsList) {
-        write(word.text, word.x, word.y, White, true);
+        write("[" + inputStr + "]" + " | Score: " + to_string(score) + " | HP: " + to_string(hp), 30, HEIGHT - BARHEIGHT + 10, Black);
+        // + " | wpm: " + to_string(wpm)
+        SDL_RenderPresent(renderer);
     }
-
-    write("[" + inputStr + "]" + " | Score: " + to_string(score) + " | HP: " + to_string(hp), 30, HEIGHT - BARHEIGHT + 10, Black);
-    // + " | wpm: " + to_string(wpm)
-    SDL_RenderPresent(renderer);
+    else return;
 }
 
 
@@ -321,19 +345,22 @@ void main_loop() {
     if (delta > 1000.0 / (float)FPS) {
         tick1 = SDL_GetTicks();
         //       cout << tick1 << endl;
-        if (startGameRequested) {
-            update();
-            input();
-            render();
-        }
-        else if (gameOver) {
+    if (startGameRequested) {
+        update();
+        input();
+        render();
+        if (gameOver) {
             RenderGameOverMenu();
+            handleGameOverMenu();
+            main_loop();
         }
-        else {
-                renderMainMenu();
-                handleMainMenuInput();
-            }
-        }
+    }
+    else {
+        renderMainMenu();
+        handleMainMenuInput();
+    }
+}
+
 }
 
 int main(int argc, char *argv[]) {

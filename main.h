@@ -9,11 +9,13 @@
 #define FONT_PATH "./resource/FSEX302.ttf"
 #define BACKGROUND_PATH "./resource/background.jpg"
 #define MAINMENU_PATH "./resource/mainmenu.jpg"
+#define GAMEOVERMENU_PATH "./resource/gameovermenu.jpg"
 #define BARHEIGHT 40
 #define HP 3
 
 static Mix_Chunk* soundEffect1;
 static Mix_Chunk* soundEffect2;
+static Mix_Chunk* soundEffect3;
 #endif
 
 

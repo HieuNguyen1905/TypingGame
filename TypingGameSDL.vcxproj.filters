@@ -18,9 +18,6 @@
     <ClInclude Include="main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="save.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="words.h">
       <Filter>Header Files</Filter>
     </ClInclude>
