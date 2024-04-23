@@ -21,7 +21,7 @@ string getLine() {
     int random = 0;
     int numOfLines = 0;
     ifstream file(WORD_PATH);
-    vector<string> lines(200);
+    vector<string> lines(500);
 
     while (file.is_open()) {
         for (auto i = 0; i < lines.size(); i++)
@@ -29,5 +29,5 @@ string getLine() {
         file.close();
     }
 
-    return lines[randomNumberX(0, 200)];
+    return lines[randomNumberX(0, 500)];
 }

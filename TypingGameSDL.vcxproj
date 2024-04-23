@@ -138,10 +138,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="highscore.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="words.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="highscore.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="words.cpp" />
   </ItemGroup>

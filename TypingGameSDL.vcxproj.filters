@@ -21,12 +21,18 @@
     <ClInclude Include="words.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="highscore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="words.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="highscore.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

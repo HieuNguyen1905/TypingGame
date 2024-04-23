@@ -12,7 +12,7 @@
 #include<set>
 #include "main.h"
 #include "words.h"
-
+#include "highscore.h"
 
 
 using namespace std;
@@ -30,17 +30,18 @@ unsigned int tick2 = SDL_GetTicks();
 bool running;
 double delta;
 SDL_Rect statusBar = { 0, HEIGHT - BARHEIGHT, WIDTH, BARHEIGHT };
-
 string inputStr = "";
-string gameState = "intro";
 double speed = SPEED;
 int score = 0;
+int HIGHSCORE = 0;
 int scoreNeedToIncrease = 10;
 double speedIncrease = SPEEDINCREASE;
 int hp = HP;
-
 bool startGameRequested = false;
 bool gameOver = false;
+bool howToPlayRequested = false;
+bool highScoreRequested = false;
+
 class Word {
 public:
     double x, y;
@@ -58,7 +59,7 @@ void write(string str, int x, int y, SDL_Color color, bool colorTyped = false) {
     SDL_Surface* surface;
     SDL_Texture* texture;
 
-    TTF_Font* font = TTF_OpenFont(FONT_PATH, FONT_SIZE);
+    TTF_Font* font = TTF_OpenFont(FONT_PATH1, FONT_SIZE1);
     if (!font)
         cout << "Couldn't find/init open ttf font >> " << TTF_GetError() << endl;
     int prefix_width = 0,
@@ -90,6 +91,176 @@ void write(string str, int x, int y, SDL_Color color, bool colorTyped = false) {
     SDL_DestroyTexture(texture);
 }
 
+void writeHighScore(string str, int x, int y, SDL_Color color) {
+    SDL_Surface* surface;
+    SDL_Texture* texture;
+
+    TTF_Font* font = TTF_OpenFont(FONT_PATH2, FONT_SIZE2);
+    if (!font)
+        cout << "Couldn't find/init open ttf font >> " << TTF_GetError() << endl;
+    int prefix_width = 0,
+        prefix_height = 0;
+        surface = TTF_RenderText_Solid(font, str.c_str(), color);
+        texture = SDL_CreateTextureFromSurface(renderer, surface);
+        prefix_width = surface->w;
+        prefix_height = surface->h;
+        SDL_Rect message_rect = { x, y, prefix_width, prefix_height };
+        SDL_RenderCopy(renderer, texture, NULL, &message_rect);
+
+    TTF_CloseFont(font);
+    SDL_FreeSurface(surface);
+    SDL_DestroyTexture(texture);
+}
+
+void renderHighScoreMenu() {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, imgTexture, NULL, NULL);
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 255);
+
+    SDL_Texture* HighScoreMenu = IMG_LoadTexture(renderer, HIGHSCORE_PATH);
+    if (!HighScoreMenu) {
+        cout << "Failed to load game over menu texture: " << IMG_GetError() << endl;
+    }
+    else {
+
+        SDL_RenderCopy(renderer, HighScoreMenu, NULL, NULL);
+
+        SDL_DestroyTexture(HighScoreMenu);
+    }
+    readHighScore(HIGHSCORE);
+    writeHighScore("Highest Score: " + to_string(HIGHSCORE), 400, 350, White);
+    SDL_RenderPresent(renderer);
+}
+
+void handleHighScoreMenu() {
+    SDL_Event e;
+    const int buttonHeight = 80;
+    const int buttonWidth = 155;
+    while (SDL_PollEvent(&e)) {
+        switch (e.type) {
+
+        case SDL_QUIT:
+            running = false;
+            break;
+        case SDL_MOUSEBUTTONDOWN:
+            int mouseX, mouseY;
+
+            SDL_GetMouseState(&mouseX, &mouseY);
+
+            if (mouseX >= 18 && mouseX <= 18 + buttonWidth &&
+                mouseY >= 608 && mouseY <= 608 + buttonHeight) {
+                highScoreRequested = false;
+            }
+
+            break;
+        default: break;
+        }
+    }
+}
+
+void renderHowToPlayMenu() {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, imgTexture, NULL, NULL);
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 255);
+
+    SDL_Texture* HowToPlay = IMG_LoadTexture(renderer, HOWTOPLAY_PATH);
+    if (!HowToPlay) {
+        cout << "Failed to load game over menu texture: " << IMG_GetError() << endl;
+    }
+    else {
+
+        SDL_RenderCopy(renderer, HowToPlay, NULL, NULL);
+
+        SDL_DestroyTexture(HowToPlay);
+    }
+
+    SDL_RenderPresent(renderer);
+}
+
+void handleHowToPlayMenu() {
+    SDL_Event e;
+    const int buttonHeight = 80;
+    const int buttonWidth = 155;
+    while (SDL_PollEvent(&e)) {
+        switch (e.type) {
+
+        case SDL_QUIT:
+            running = false;
+            break;
+        case SDL_MOUSEBUTTONDOWN:
+            int mouseX, mouseY;
+
+            SDL_GetMouseState(&mouseX, &mouseY);
+          
+            if (mouseX >= 18 && mouseX <= 18 + buttonWidth &&
+                mouseY >= 608 && mouseY <= 608 + buttonHeight) {
+                howToPlayRequested = false;
+            }
+
+            break;
+        default: break;
+        }
+    }
+}
+
+void RenderGameOverMenu() {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, imgTexture, NULL, NULL);
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 255);
+
+    SDL_Texture* GameOverMenu = IMG_LoadTexture(renderer, GAMEOVERMENU_PATH);
+    if (!GameOverMenu) {
+        cout << "Failed to load game over menu texture: " << IMG_GetError() << endl;
+    }
+    else {
+
+        SDL_RenderCopy(renderer, GameOverMenu, NULL, NULL);
+
+        SDL_DestroyTexture(GameOverMenu);
+    }
+    writeHighScore("Current Score: " + to_string(score), 400, 100, White);
+    writeHighScore("Highest Score: " + to_string(HIGHSCORE), 400, 150, White);
+
+    SDL_RenderPresent(renderer);
+
+}
+
+void handleGameOverMenu() {
+    SDL_Event e;
+    const int buttonHeight = 80;
+    const int buttonWidth = 320;
+    while (SDL_PollEvent(&e)) {
+        switch (e.type) {
+
+        case SDL_QUIT:    
+            running = false;
+            break;
+        case SDL_MOUSEBUTTONDOWN:
+            int mouseX, mouseY;
+            SDL_GetMouseState(&mouseX, &mouseY);
+            if (mouseX >= 456 && mouseX <= 456 + buttonWidth &&
+                mouseY >= 457 && mouseY <= 457 + buttonHeight) {
+
+                gameOver = false;
+                startGameRequested = true;
+                score = 0;
+                hp = HP;
+                speed = SPEED;
+                scoreNeedToIncrease = 10;
+                wordsList.clear();
+            }
+            if (mouseX >= 460 && mouseX <= 460 + buttonWidth &&
+                mouseY >= 576 && mouseY <= 576 + buttonHeight) {
+                running = false;
+            }
+            break;
+        default: break;
+        }
+    }
+}
 
 void renderMainMenu() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
@@ -112,69 +283,10 @@ void renderMainMenu() {
     SDL_RenderPresent(renderer);
 }
 
-void RenderGameOverMenu() {
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-    SDL_RenderClear(renderer);
-    SDL_RenderCopy(renderer, imgTexture, NULL, NULL);
-    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 255);
-
-    SDL_Texture* GameOverMenu = IMG_LoadTexture(renderer, GAMEOVERMENU_PATH);
-    if (!GameOverMenu) {
-        cout << "Failed to load game over menu texture: " << IMG_GetError() << endl;
-    }
-    else {
-
-        SDL_RenderCopy(renderer, GameOverMenu, NULL, NULL);
-
-        SDL_DestroyTexture(GameOverMenu);
-    }
-
-    SDL_RenderPresent(renderer);
-
-}
-
-
-void handleGameOverMenu() {
-    SDL_Event e;
-//    const Uint8* keystates = SDL_GetKeyboardState(NULL);
-    const int buttonHeight = 80;
-    const int buttonWidth = 320;
-    while (SDL_PollEvent(&e)) {
-        switch (e.type) {
-
-        case SDL_QUIT:    
-            running = false;
-            break;
-        case SDL_MOUSEBUTTONDOWN:
-            int mouseX, mouseY;
-            SDL_GetMouseState(&mouseX, &mouseY);
-            if (mouseX >= 456 && mouseX <= 456 + buttonWidth &&
-                mouseY >= 457 && mouseY <= 457 + buttonHeight) {
-
-                gameOver = false;
-                startGameRequested = true;
-                score = 0;
-                hp = HP;
-                speed = SPEED;
-                scoreNeedToIncrease = 10;
-            }
-            if (mouseX >= 460 && mouseX <= 460 + buttonWidth &&
-                mouseY >= 576 && mouseY <= 576 + buttonHeight) {
-                running = false;
-            }
-            break;
-        default: break;
-        }
-    }
-}
-
-
-
 void handleMainMenuInput() {
     SDL_Event e;
-
-    const int buttonHeight = 80;
-    const int buttonWidth = 320;
+    const int buttonHeight = 100;
+    const int buttonWidth = 393;
     while (SDL_PollEvent(&e)) {
         switch (e.type) {
 
@@ -186,27 +298,32 @@ void handleMainMenuInput() {
 
             SDL_GetMouseState(&mouseX, &mouseY);
             // Start
-            if (mouseX >= 470 && mouseX <= 470 + buttonWidth &&
-                mouseY >= 313 && mouseY <= 313 + buttonHeight) {
-
+            if (mouseX >= 437 && mouseX <= 437 + buttonWidth &&
+                mouseY >= 246 && mouseY <= 246 + buttonHeight) {
                 startGameRequested = true;
             }
-            // Instruction
-            if (mouseX >= 460 && mouseX <= 460 + buttonWidth &&
-                mouseY >= 623 && mouseY <= 623 + buttonHeight) {
+            // How To Play
+            if (mouseX >= 437 && mouseX <= 437 + buttonWidth &&
+                mouseY >= 397 && mouseY <= 397 + buttonHeight) {
+                howToPlayRequested = true;
             }
-            // High Score
+            // HighScore
+            if (mouseX >= 437 && mouseX <= 437 + buttonWidth &&
+                mouseY >= 565 && mouseY <= 565 + buttonHeight) {
+                highScoreRequested = true;
+            }
             break;
         default: break;
         }
     }
 }
 
-
-
 void update() {
     if (hp <= 0) {
+        saveHighScore(score);
+        readHighScore(HIGHSCORE);
         gameOver = true;
+        startGameRequested = false;
         return;
     }
 
@@ -215,7 +332,7 @@ void update() {
 
     while (wordsList.size() < 15) {
         double x = randomNumberX(0, 200);
-        double y = randomNumberY(0, HEIGHT - 50);
+        double y = randomNumberY(0, HEIGHT - 80);
 
         // Kiểm tra xem vị trí đã được chọn chưa
         if (chosenPositions.find({ (int)x, (int)y }) == chosenPositions.end()) {
@@ -240,7 +357,6 @@ void update() {
     wordsList = tempList;
 }
 
-
 void checkInput() {
     vector<Word> tempList;
     bool found = false;
@@ -261,7 +377,6 @@ void checkInput() {
         speed += speedIncrease;
         scoreNeedToIncrease += 10;
     }
- //   cout << speed << endl;
     wordsList = tempList;
 
     inputStr = "";
@@ -313,10 +428,7 @@ void input() {
     else return;
 }
 
-
 void render() {
-    if (!gameOver)
-    {
         SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 255);
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, imgTexture, NULL, NULL);
@@ -328,37 +440,42 @@ void render() {
         }
 
         write("[" + inputStr + "]" + " | Score: " + to_string(score) + " | HP: " + to_string(hp), 30, HEIGHT - BARHEIGHT + 10, Black);
-        // + " | wpm: " + to_string(wpm)
+
         SDL_RenderPresent(renderer);
-    }
-    else return;
+
 }
-
-
 
 void main_loop() {
     Uint64 start = SDL_GetPerformanceCounter();
     tick2 = SDL_GetTicks();
- //   cout << tick2 << endl;
+
     delta = tick2 - tick1;
- //   cout << delta << endl;
+
     if (delta > 1000.0 / (float)FPS) {
         tick1 = SDL_GetTicks();
-        //       cout << tick1 << endl;
-    if (startGameRequested) {
-        update();
-        input();
-        render();
-        if (gameOver) {
+
+    
+        if (startGameRequested == false && gameOver == false && howToPlayRequested == false && highScoreRequested == false) {
+            renderMainMenu();
+            handleMainMenuInput();
+        }
+        else if (startGameRequested == false && gameOver == false && howToPlayRequested == false && highScoreRequested == true) {
+            renderHighScoreMenu();
+            handleHighScoreMenu();
+        }
+        else if (startGameRequested == false && gameOver == false && howToPlayRequested == true && highScoreRequested == false) {
+            renderHowToPlayMenu();
+            handleHowToPlayMenu();
+        }
+        else if (startGameRequested == false && gameOver == true && howToPlayRequested == false && highScoreRequested == false) {
             RenderGameOverMenu();
             handleGameOverMenu();
-            main_loop();
         }
-    }
-    else {
-        renderMainMenu();
-        handleMainMenuInput();
-    }
+        else if (startGameRequested == true && gameOver == false && howToPlayRequested == false && highScoreRequested == false) {
+            update();
+            input();
+            render();
+        }
 }
 
 }
@@ -390,6 +507,7 @@ int main(int argc, char *argv[]) {
     }
     soundEffect1 = Mix_LoadWAV("resource/typing.wav");
     soundEffect2 = Mix_LoadWAV("resource/trueword.wav");
+    
 
     while (running) 
         main_loop();
