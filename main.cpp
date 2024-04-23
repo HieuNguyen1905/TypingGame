@@ -313,6 +313,7 @@ void handleGameOverMenu() {
                 hp = HP;
                 speed = SPEED;
                 scoreNeedToIncrease = 10;
+                inputStr = "";
                 wordsList.clear();
             }
             if (mouseX >= 460 && mouseX <= 460 + buttonWidth &&
