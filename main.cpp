@@ -14,7 +14,6 @@
 #include "words.h"
 #include "highscore.h"
 
-
 using namespace std;
 
 SDL_Renderer* renderer;
@@ -41,7 +40,7 @@ bool startGameRequested = false;
 bool gameOver = false;
 bool howToPlayRequested = false;
 bool highScoreRequested = false;
-
+bool pauseRequested = false;
 class Word {
 public:
     double x, y;
@@ -144,6 +143,10 @@ void handleHighScoreMenu() {
             running = false;
             break;
         case SDL_MOUSEBUTTONDOWN:
+            if (!soundEffect3) {
+                cout << "Failed to load typing sound effect1!" << endl;
+            }
+            Mix_PlayChannel(-1, soundEffect3, 0);
             int mouseX, mouseY;
 
             SDL_GetMouseState(&mouseX, &mouseY);
@@ -190,6 +193,10 @@ void handleHowToPlayMenu() {
             running = false;
             break;
         case SDL_MOUSEBUTTONDOWN:
+            if (!soundEffect3) {
+                cout << "Failed to load typing sound effect1!" << endl;
+            }
+            Mix_PlayChannel(-1, soundEffect3, 0);
             int mouseX, mouseY;
 
             SDL_GetMouseState(&mouseX, &mouseY);
@@ -199,6 +206,58 @@ void handleHowToPlayMenu() {
                 howToPlayRequested = false;
             }
 
+            break;
+        default: break;
+        }
+    }
+}
+
+void renderPauseMenu() {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, imgTexture, NULL, NULL);
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 255);
+
+    SDL_Texture* PauseMenu = IMG_LoadTexture(renderer, PAUSEMENU_PATH);
+    if (!PauseMenu) {
+        cout << "Failed to load game over menu texture: " << IMG_GetError() << endl;
+    }
+    else {
+
+        SDL_RenderCopy(renderer, PauseMenu, NULL, NULL);
+
+        SDL_DestroyTexture(PauseMenu);
+    }
+
+    SDL_RenderPresent(renderer);
+}
+
+void handlePauseMenu() {
+    SDL_Event e;
+    const int buttonHeight = 97;
+    const int buttonWidth = 396;
+    while (SDL_PollEvent(&e)) {
+        switch (e.type) {
+
+        case SDL_QUIT:
+            running = false;
+            break;
+        case SDL_MOUSEBUTTONDOWN:
+            if (!soundEffect3) {
+                cout << "Failed to load typing sound effect1!" << endl;
+            }
+            Mix_PlayChannel(-1, soundEffect3, 0);
+            int mouseX, mouseY;
+            SDL_GetMouseState(&mouseX, &mouseY);
+            if (mouseX >= 437 && mouseX <= 437 + buttonWidth &&
+                mouseY >= 244 && mouseY <= 244 + buttonHeight) {
+                startGameRequested = true;
+                pauseRequested = false;
+            }
+            if (mouseX >= 437 && mouseX <= 437 + buttonWidth &&
+                mouseY >= 394 && mouseY <= 394 + buttonHeight) {
+                running = false;
+            }
             break;
         default: break;
         }
@@ -239,6 +298,10 @@ void handleGameOverMenu() {
             running = false;
             break;
         case SDL_MOUSEBUTTONDOWN:
+            if (!soundEffect3) {
+                cout << "Failed to load typing sound effect1!" << endl;
+            }
+            Mix_PlayChannel(-1, soundEffect3, 0);
             int mouseX, mouseY;
             SDL_GetMouseState(&mouseX, &mouseY);
             if (mouseX >= 456 && mouseX <= 456 + buttonWidth &&
@@ -294,6 +357,10 @@ void handleMainMenuInput() {
             running = false;
             break;
         case SDL_MOUSEBUTTONDOWN:
+            if (!soundEffect3) {
+                cout << "Failed to load typing sound effect1!" << endl;
+            }
+            Mix_PlayChannel(-1, soundEffect3, 0);
             int mouseX, mouseY;
 
             SDL_GetMouseState(&mouseX, &mouseY);
@@ -383,13 +450,20 @@ void checkInput() {
 }
 
 void input() {
-    if (!gameOver) {
-
         SDL_Event e;
         const Uint8* keystates = SDL_GetKeyboardState(NULL);
         SDL_StartTextInput();
         while (SDL_PollEvent(&e)) {
             switch (e.type) {
+            case SDL_MOUSEBUTTONDOWN:
+                int mouseX, mouseY;
+                SDL_GetMouseState(&mouseX, &mouseY);
+                if (mouseX >= 1233 && mouseX <= WIDTH &&
+                    mouseY >= 0 && mouseY <= 44) {
+                    pauseRequested = true;
+                    startGameRequested = false;
+                }
+
             case SDL_KEYDOWN:
                 if (!soundEffect1) {
                     cout << "Failed to load typing sound effect1!" << endl;
@@ -424,9 +498,7 @@ void input() {
             default: break;
             }
         }
-    }
-    else return;
-}
+ }
 
 void render() {
         SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 255);
@@ -455,23 +527,27 @@ void main_loop() {
         tick1 = SDL_GetTicks();
 
     
-        if (startGameRequested == false && gameOver == false && howToPlayRequested == false && highScoreRequested == false) {
+        if (startGameRequested == false && gameOver == false && howToPlayRequested == false && highScoreRequested == false && pauseRequested == false) {
             renderMainMenu();
             handleMainMenuInput();
         }
-        else if (startGameRequested == false && gameOver == false && howToPlayRequested == false && highScoreRequested == true) {
+        else if (startGameRequested == false && gameOver == false && howToPlayRequested == false && highScoreRequested == false && pauseRequested == true) {
+            renderPauseMenu();
+            handlePauseMenu();
+        }
+        else if (startGameRequested == false && gameOver == false && howToPlayRequested == false && highScoreRequested == true && pauseRequested == false) {
             renderHighScoreMenu();
             handleHighScoreMenu();
         }
-        else if (startGameRequested == false && gameOver == false && howToPlayRequested == true && highScoreRequested == false) {
+        else if (startGameRequested == false && gameOver == false && howToPlayRequested == true && highScoreRequested == false && pauseRequested == false) {
             renderHowToPlayMenu();
             handleHowToPlayMenu();
         }
-        else if (startGameRequested == false && gameOver == true && howToPlayRequested == false && highScoreRequested == false) {
+        else if (startGameRequested == false && gameOver == true && howToPlayRequested == false && highScoreRequested == false && pauseRequested == false) {
             RenderGameOverMenu();
             handleGameOverMenu();
         }
-        else if (startGameRequested == true && gameOver == false && howToPlayRequested == false && highScoreRequested == false) {
+        else if (startGameRequested == true && gameOver == false && howToPlayRequested == false && highScoreRequested == false && pauseRequested == false) {
             update();
             input();
             render();
@@ -507,7 +583,7 @@ int main(int argc, char *argv[]) {
     }
     soundEffect1 = Mix_LoadWAV("resource/typing.wav");
     soundEffect2 = Mix_LoadWAV("resource/trueword.wav");
-    
+    soundEffect3 = Mix_LoadWAV("resource/popup.wav");
 
     while (running) 
         main_loop();
