@@ -20,6 +20,7 @@
 static Mix_Chunk* soundEffect1;
 static Mix_Chunk* soundEffect2;
 static Mix_Chunk* soundEffect3;
+static Mix_Music* soundEffect4;
 #endif
 
 

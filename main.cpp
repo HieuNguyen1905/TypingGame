@@ -256,7 +256,8 @@ void handlePauseMenu() {
             }
             if (mouseX >= 437 && mouseX <= 437 + buttonWidth &&
                 mouseY >= 394 && mouseY <= 394 + buttonHeight) {
-                running = false;
+                startGameRequested = false;
+                pauseRequested = false;
             }
             break;
         default: break;
@@ -527,7 +528,7 @@ void main_loop() {
     if (delta > 1000.0 / (float)FPS) {
         tick1 = SDL_GetTicks();
 
-    
+        
         if (startGameRequested == false && gameOver == false && howToPlayRequested == false && highScoreRequested == false && pauseRequested == false) {
             renderMainMenu();
             handleMainMenuInput();
@@ -585,9 +586,16 @@ int main(int argc, char *argv[]) {
     soundEffect1 = Mix_LoadWAV("resource/typing.wav");
     soundEffect2 = Mix_LoadWAV("resource/trueword.wav");
     soundEffect3 = Mix_LoadWAV("resource/popup.wav");
+    soundEffect4 = Mix_LoadMUS("resource/gMusic.wav");
 
-    while (running) 
+    if (!soundEffect4) {
+        cout << "Failed to load typing sound effect4!" << endl;
+    }
+    Mix_PlayMusic(soundEffect4, -1);
+    while (running) {
+
         main_loop();
+    }
 
     TTF_CloseFont(font);
     SDL_DestroyRenderer(renderer);
