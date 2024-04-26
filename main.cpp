@@ -99,12 +99,12 @@ void writeHighScore(string str, int x, int y, SDL_Color color) {
         cout << "Couldn't find/init open ttf font >> " << TTF_GetError() << endl;
     int prefix_width = 0,
         prefix_height = 0;
-        surface = TTF_RenderText_Solid(font, str.c_str(), color);
-        texture = SDL_CreateTextureFromSurface(renderer, surface);
-        prefix_width = surface->w;
-        prefix_height = surface->h;
-        SDL_Rect message_rect = { x, y, prefix_width, prefix_height };
-        SDL_RenderCopy(renderer, texture, NULL, &message_rect);
+    surface = TTF_RenderText_Solid(font, str.c_str(), color);
+    texture = SDL_CreateTextureFromSurface(renderer, surface);
+    prefix_width = surface->w;
+    prefix_height = surface->h;
+    SDL_Rect message_rect = { x, y, prefix_width, prefix_height };
+    SDL_RenderCopy(renderer, texture, NULL, &message_rect);
 
     TTF_CloseFont(font);
     SDL_FreeSurface(surface);
@@ -200,7 +200,7 @@ void handleHowToPlayMenu() {
             int mouseX, mouseY;
 
             SDL_GetMouseState(&mouseX, &mouseY);
-          
+
             if (mouseX >= 18 && mouseX <= 18 + buttonWidth &&
                 mouseY >= 608 && mouseY <= 608 + buttonHeight) {
                 howToPlayRequested = false;
@@ -249,13 +249,21 @@ void handlePauseMenu() {
             Mix_PlayChannel(-1, soundEffect3, 0);
             int mouseX, mouseY;
             SDL_GetMouseState(&mouseX, &mouseY);
+            //CONTINUE
             if (mouseX >= 437 && mouseX <= 437 + buttonWidth &&
                 mouseY >= 244 && mouseY <= 244 + buttonHeight) {
                 startGameRequested = true;
                 pauseRequested = false;
             }
+            //HOME
             if (mouseX >= 437 && mouseX <= 437 + buttonWidth &&
                 mouseY >= 394 && mouseY <= 394 + buttonHeight) {
+                score = 0;
+                hp = HP;
+                speed = SPEED;
+                scoreNeedToIncrease = 10;
+                inputStr = "";
+                wordsList.clear();
                 startGameRequested = false;
                 pauseRequested = false;
             }
@@ -295,7 +303,7 @@ void handleGameOverMenu() {
     while (SDL_PollEvent(&e)) {
         switch (e.type) {
 
-        case SDL_QUIT:    
+        case SDL_QUIT:
             running = false;
             break;
         case SDL_MOUSEBUTTONDOWN:
@@ -333,18 +341,14 @@ void renderMainMenu() {
     SDL_RenderCopy(renderer, imgTexture, NULL, NULL);
     SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 255);
 
-    // Load hình ảnh cho menu
     SDL_Texture* mainMenuTexture = IMG_LoadTexture(renderer, MAINMENU_PATH);
     if (!mainMenuTexture) {
         cout << "Failed to load main menu texture: " << IMG_GetError() << endl;
     }
     else {
-        // Vẽ hình ảnh lên renderer
         SDL_RenderCopy(renderer, mainMenuTexture, NULL, NULL);
-        // Dọn dẹp texture sau khi sử dụng
         SDL_DestroyTexture(mainMenuTexture);
     }
-
     SDL_RenderPresent(renderer);
 }
 
@@ -396,19 +400,16 @@ void update() {
         return;
     }
 
-    // Sử dụng set để lưu trữ các vị trí đã chọn
     set<pair<int, int>> chosenPositions;
 
-    while (wordsList.size() < 15) {
-        double x = randomNumberX(0, 200);
-        double y = randomNumberY(0, HEIGHT - 80);
+    while (wordsList.size() < 7) {
+        double x = randomNumber(0,100);
+        double y = randomNumber(0,HEIGHT - 80);
 
-        // Kiểm tra xem vị trí đã được chọn chưa
         if (chosenPositions.find({ (int)x, (int)y }) == chosenPositions.end()) {
             Word temp(x, y, getLine());
             wordsList.push_back(temp);
 
-            // Thêm vị trí vào set
             chosenPositions.insert({ (int)x, (int)y });
         }
     }
@@ -429,7 +430,7 @@ void update() {
 void checkInput() {
     vector<Word> tempList;
     bool found = false;
-    for (auto &word : wordsList) {
+    for (auto& word : wordsList) {
         if (word.text == inputStr && !found) {
             found = true;
             score++;
@@ -452,70 +453,70 @@ void checkInput() {
 }
 
 void input() {
-        SDL_Event e;
-        const Uint8* keystates = SDL_GetKeyboardState(NULL);
-        SDL_StartTextInput();
-        while (SDL_PollEvent(&e)) {
-            switch (e.type) {
-            case SDL_MOUSEBUTTONDOWN:
-                int mouseX, mouseY;
-                SDL_GetMouseState(&mouseX, &mouseY);
-                if (mouseX >= 1233 && mouseX <= WIDTH &&
-                    mouseY >= 0 && mouseY <= 44) {
-                    pauseRequested = true;
-                    startGameRequested = false;
-                }
-
-            case SDL_KEYDOWN:
-                if (!soundEffect1) {
-                    cout << "Failed to load typing sound effect1!" << endl;
-                }
-                Mix_PlayChannel(-1, soundEffect1, 0);
-
-                switch (e.key.keysym.sym)
-                {
-                case SDLK_RETURN:
-                    checkInput();
-                    break;
-                case SDLK_BACKSPACE:
-                    if (inputStr.length() > 0)
-                        inputStr.pop_back();
-                    break;
-                default:
-                    break;
-                }
-
-                break;
-            case SDL_QUIT:
-                running = false;
-                break;
-            case SDL_TEXTINPUT:
-                if (*e.text.text == ' ') {
-                    checkInput();
-                }
-                else {
-                    inputStr += e.text.text;
-                    break;
-                }
-            default: break;
+    SDL_Event e;
+    const Uint8* keystates = SDL_GetKeyboardState(NULL);
+    SDL_StartTextInput();
+    while (SDL_PollEvent(&e)) {
+        switch (e.type) {
+        case SDL_MOUSEBUTTONDOWN:
+            int mouseX, mouseY;
+            SDL_GetMouseState(&mouseX, &mouseY);
+            if (mouseX >= 1233 && mouseX <= WIDTH &&
+                mouseY >= 0 && mouseY <= 44) {
+                pauseRequested = true;
+                startGameRequested = false;
             }
+
+        case SDL_KEYDOWN:
+            if (!soundEffect1) {
+                cout << "Failed to load typing sound effect1!" << endl;
+            }
+            Mix_PlayChannel(-1, soundEffect1, 0);
+
+            switch (e.key.keysym.sym)
+            {
+            case SDLK_RETURN:
+                checkInput();
+                break;
+            case SDLK_BACKSPACE:
+                if (inputStr.length() > 0)
+                    inputStr.pop_back();
+                break;
+            default:
+                break;
+            }
+
+            break;
+        case SDL_QUIT:
+            running = false;
+            break;
+        case SDL_TEXTINPUT:
+            if (*e.text.text == ' ') {
+                checkInput();
+            }
+            else {
+                inputStr += e.text.text;
+                break;
+            }
+        default: break;
         }
- }
+    }
+}
 
 void render() {
-        SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 255);
-        SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, imgTexture, NULL, NULL);
-        SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 255);
-        SDL_RenderFillRect(renderer, &statusBar);
+    SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 255);
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, imgTexture, NULL, NULL);
+    SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 255);
+    SDL_RenderFillRect(renderer, &statusBar);
 
-        for (auto& word : wordsList) {
-            write(word.text, word.x, word.y, White, true);
-        }
+    for (auto& word : wordsList) {
+        write(word.text, word.x, word.y, White, true);
+    }
 
-        write("[" + inputStr + "]" + " | Score: " + to_string(score) + " | HP: " + to_string(hp), 30, HEIGHT - BARHEIGHT + 10, Black);
+    write("[" + inputStr + "]" + " | Score: " + to_string(score) + " | HP: " + to_string(hp), 30, HEIGHT - BARHEIGHT + 10, Black);
 
-        SDL_RenderPresent(renderer);
+    SDL_RenderPresent(renderer);
 
 }
 
@@ -528,7 +529,7 @@ void main_loop() {
     if (delta > 1000.0 / (float)FPS) {
         tick1 = SDL_GetTicks();
 
-        
+
         if (startGameRequested == false && gameOver == false && howToPlayRequested == false && highScoreRequested == false && pauseRequested == false) {
             renderMainMenu();
             handleMainMenuInput();
@@ -554,12 +555,12 @@ void main_loop() {
             input();
             render();
         }
-}
+    }
 
 }
 
-int main(int argc, char *argv[]) {
-
+int main(int argc, char* argv[]) {
+    srand(time(NULL));
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
         cout << "Failed at SDL_Init()" << endl;
     if (SDL_CreateWindowAndRenderer(WIDTH, HEIGHT, 0, &window, &renderer) < 0)
@@ -604,5 +605,4 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-
 

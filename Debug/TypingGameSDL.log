@@ -1,6 +1,7 @@
 ﻿  main.cpp
 C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\charconv(12): warning STL4038: The contents of <charconv> are available only with C++17 or later.
 C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.39.33519\include\filesystem(12): warning STL4038: The contents of <filesystem> are available only with C++17 or later.
-D:\C++\TypingGameSDL\TypingGameSDL\main.cpp(513,42): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
-D:\C++\TypingGameSDL\TypingGameSDL\main.cpp(513,34): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+D:\C++\TypingGameSDL\TypingGameSDL\main.cpp(514,38): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+D:\C++\TypingGameSDL\TypingGameSDL\main.cpp(514,30): warning C4244: 'argument': conversion from 'double' to 'int', possible loss of data
+D:\C++\TypingGameSDL\TypingGameSDL\main.cpp(563,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
   TypingGameSDL.vcxproj -> D:\C++\TypingGameSDL\Debug\TypingGameSDL.exe

@@ -2,21 +2,14 @@
 #include <string>
 using namespace std;
 
-int randomNumberX(double start, double end) {
-    random_device rd; 
-    mt19937 mt(rd()); 
-    uniform_real_distribution<double> dist(start, end); 
-    return dist(mt);
-}
-int randomNumberY(double start, double end) {
-    random_device rd; 
-    mt19937 mt(rd()); 
+int randomNumber(double start, double end) {
+    random_device rd;
+    mt19937 mt(rd());
     uniform_real_distribution<double> dist(start, end);
     return dist(mt);
 }
 
-
-string getLine() {
+string getLine(){
     string line;
     int random = 0;
     int numOfLines = 0;
@@ -29,5 +22,5 @@ string getLine() {
         file.close();
     }
 
-    return lines[randomNumberX(0, 500)];
+    return lines[randomNumber(0,500)];
 }

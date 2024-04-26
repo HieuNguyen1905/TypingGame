@@ -1,7 +1,7 @@
 #ifndef MAIN_H
 #define WIDTH 1280
 #define HEIGHT 720
-#define FONT_SIZE1 16
+#define FONT_SIZE1 18
 #define FONT_SIZE2 50
 #define SPEED 0.5
 #define SPEEDINCREASE 0.5
