@@ -1,5 +1,6 @@
 ﻿# Typing Words Game
 
+* [Mã nguồn và thử nghiệm game](https://drive.google.com/drive/u/1/folders/1fFg55OxbwQbiW3doYJgjYl-Y0myOc03Q)
 ## Giới thiệu game
 
 

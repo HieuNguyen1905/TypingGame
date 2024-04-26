@@ -402,8 +402,8 @@ void update() {
 
     set<pair<int, int>> chosenPositions;
 
-    while (wordsList.size() < 7) {
-        double x = randomNumber(0,100);
+    while (wordsList.size() < 10) {
+        double x = randomNumber(0,125);
         double y = randomNumber(0,HEIGHT - 80);
 
         if (chosenPositions.find({ (int)x, (int)y }) == chosenPositions.end()) {
@@ -594,7 +594,6 @@ int main(int argc, char* argv[]) {
     }
     Mix_PlayMusic(soundEffect4, -1);
     while (running) {
-
         main_loop();
     }
 
